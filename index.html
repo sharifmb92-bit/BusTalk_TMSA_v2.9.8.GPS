@@ -17,7 +17,14 @@
     <!-- MANIFEST PWA E ICONOS -->
     <link rel="manifest" href="./manifest.json">
     <link rel="apple-touch-icon" href="./icon-152.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="./icon-192.png">
     <link rel="icon" type="image/png" sizes="192x192" href="./icon-192.png">
+
+    <!-- METADATOS ESPECÍFICOS PARA APPLE iOS / iPadOS -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="BusTalk">
+    <meta name="theme-color" content="#121212">
 
     <style>
         [x-cloak] { display: none !important; }
@@ -166,7 +173,7 @@
         </div>
     </div>
 
-    <!-- MODAL PERSONALIZADO RESUMEN TRAYECTO (SIN AVISOS DE NAVEGADOR) -->
+    <!-- MODAL PERSONALIZADO RESUMEN TRAYECTO -->
     <div x-show="mostrarModalResumen" x-cloak class="fixed inset-0 bg-black/90 z-[120] flex items-center justify-center p-4">
         <div class="bg-panel p-6 rounded-3xl border-2 border-blue-500 w-full max-w-sm text-center shadow-2xl space-y-4">
             <div class="text-blue-500 text-5xl mb-1"><i class="fas fa-clipboard-check"></i></div>
@@ -183,7 +190,18 @@
                 </div>
             </div>
 
-            <!-- SELECTOR DE ROTACIÓN RÁPIDA DE SALIDA EN CALA GALDANA (L51/L52/L53) -->
+            <!-- SELECTOR RÁPIDO SANT TOMÀS (L71 / L72) -->
+            <template x-if="esTerminalTomas">
+                <div class="space-y-2 pt-2">
+                    <p class="text-xs text-yellow-400 font-bold">Selecciona línea de regreso de Sant Tomàs:</p>
+                    <div class="grid grid-cols-2 gap-2">
+                        <button @click="cambiarServicioTomas('L71')" class="py-3 bg-blue-700 text-white font-black text-xs rounded-xl border border-blue-400">L71 (Maó)</button>
+                        <button @click="cambiarServicioTomas('L72')" class="py-3 bg-emerald-700 text-white font-black text-xs rounded-xl border border-emerald-400">L72 (Ciutadella)</button>
+                    </div>
+                </div>
+            </template>
+
+            <!-- SELECTOR DE ROTACIÓN RÁPIDA EN CALA GALDANA (L51 / L52 / L53) -->
             <template x-if="esTerminalGaldana">
                 <div class="space-y-2 pt-2">
                     <p class="text-xs text-yellow-400 font-bold">Selecciona siguiente servicio de salida:</p>
@@ -195,9 +213,11 @@
                 </div>
             </template>
 
-            <button @click="confirmarCierreResumen()" class="w-full py-3.5 bg-blue-600 text-white font-black rounded-2xl text-base uppercase shadow-lg active:scale-95">
-                Aceptar y Continuar
-            </button>
+            <template x-if="!esTerminalGaldana && !esTerminalTomas">
+                <button @click="confirmarCierreResumen()" class="w-full py-3.5 bg-blue-600 text-white font-black rounded-2xl text-base uppercase shadow-lg active:scale-95">
+                    Aceptar y Continuar
+                </button>
+            </template>
         </div>
     </div>
 
@@ -283,6 +303,10 @@
                         <button @click="seleccionarLineaModal('Línea Maó - Galdana')" class="w-full text-left p-3 rounded-xl text-lg font-bold transition-colors flex justify-between items-center" :class="miLineaInput === 'Línea Maó - Galdana' ? 'bg-yellow-500 text-black font-black' : 'bg-card text-primary'">
                             <span>L51 (Maó - Galdana)</span>
                             <i class="fas fa-check" x-show="miLineaInput === 'Línea Maó - Galdana'"></i>
+                        </button>
+                        <button @click="seleccionarLineaModal('Línea Ferreries - Galdana')" class="w-full text-left p-3 rounded-xl text-lg font-bold transition-colors flex justify-between items-center" :class="miLineaInput === 'Línea Ferreries - Galdana' ? 'bg-yellow-500 text-black font-black' : 'bg-card text-primary'">
+                            <span>L53 Lanzadera (Ferreries - Galdana)</span>
+                            <i class="fas fa-check" x-show="miLineaInput === 'Línea Ferreries - Galdana'"></i>
                         </button>
                         <button @click="seleccionarLineaModal('Línea Ciu - S. Tomàs')" class="w-full text-left p-3 rounded-xl text-lg font-bold transition-colors flex justify-between items-center" :class="miLineaInput === 'Línea Ciu - S. Tomàs' ? 'bg-yellow-500 text-black font-black' : 'bg-card text-primary'">
                             <span>L72 (Ciu - Sant Tomàs)</span>
@@ -664,7 +688,7 @@
                 segundosEnParadaActual: 0, inicioParadaTimestamp: Date.now(),
                 acumuladoParadasTrayecto: 0, ultimoTiempoParadoCongelado: 0, acumuladoRetrasoTráfico: 0,
                 compañeros:[], misParadasArray:[],
-                mostrarModalZonas: false, mostrarModalResumen: false, esTerminalGaldana: false,
+                mostrarModalZonas: false, mostrarModalResumen: false, esTerminalGaldana: false, esTerminalTomas: false,
                 abrirPoniente: false, abrirLevante: false,
                 modoColor: 'noche', mostrarAvisoApagarRadio: false, mostrarAvisoFinalRuta: false,
                 
@@ -695,7 +719,8 @@
                     "Galdana": { lat: 39.9380, lng: 3.9610 },
                     "Cementerio": { lat: 39.9750, lng: 3.9780 },
                     "Camping": { lat: 39.9620, lng: 3.9710 },
-                    "C. Mitjana": { lat: 39.9480, lng: 3.9650 }
+                    "C. Mitjana": { lat: 39.9480, lng: 3.9650 },
+                    "Migjorn": { lat: 39.9481, lng: 4.0812 }
                 },
 
                 estadoRadio: 'reposo', elQueHabla: null, lineaQueHabla: '',
@@ -979,8 +1004,8 @@
                         "L91 (Maó - S'Algar)": ["Maó", "S. Lluís", "S'Algar", "Alcaufar"],
                         "L92 (Maó - P. Prima)": ["Maó", "S. Lluís", "P. Prima"],
                         "L93 (Maó - Binibèquer)": ["Maó", "S. Lluís", "Binibèquer"],
-                        "Línea Ciu - Galdana": ["Ciu", "Ferr", "Galdana"],
-                        "Línea Maó - Galdana": ["Maó", "Argen", "Alaior P.", "Alaior C.", "Mer", "Ferr", "Galdana"],
+                        "Línea Ciu - Galdana": ["Ciu", "Ferr", "Cementerio", "Camping", "C. Mitjana", "Galdana"],
+                        "Línea Maó - Galdana": ["Maó", "Argen", "Alaior P.", "Alaior C.", "Mer", "Ferr", "Cementerio", "Camping", "C. Mitjana", "Galdana"],
                         "Línea Ferreries - Galdana": ["Ferr", "Cementerio", "Camping", "C. Mitjana", "Galdana"],
                         "Línea Ciu - S. Tomàs": ["Ciu", "Ferr", "Mer", "Migjorn", "S. Tomàs 1ª", "S. Tomàs 2ª", "S. Tomàs 3ª"],
                         "Línea Maó - S. Tomàs": ["Maó", "Argen", "Alaior P.", "Alaior C.", "Migjorn", "S. Tomàs 1ª", "S. Tomàs 2ª", "S. Tomàs 3ª"],
@@ -994,18 +1019,17 @@
                     this.evaluarSentidoIda();
                 },
 
+                // REGLA DE COLORES UNIFICADA POR SENTIDO GEOGRÁFICO
                 evaluarSentidoIda() {
                     if (this.misParadasArray.length > 0) {
                         const origen = this.misParadasArray[0];
-                        const destino = this.misParadasArray[this.misParadasArray.length - 1];
-
-                        if ((origen === 'Maó' && destino === 'Ciu') || (origen === 'Maó' && destino.includes('Ciu'))) {
+                        
+                        // Levante -> Poniente (Salidas desde Maó y sus vueltas): ROJO
+                        if (origen === 'Maó' || origen.includes('Maó')) {
                             this.esSentidoIda = true;
-                        } else if ((origen === 'Ciu' && destino === 'Maó') || (origen === 'Ciu' && destino.includes('Maó'))) {
-                            this.esSentidoIda = false;
-                        } else if (origen === 'Maó') {
-                            this.esSentidoIda = true;
-                        } else {
+                        } 
+                        // Poniente -> Levante (Salidas desde Ciutadella / Galdana / Sant Tomàs): NARANJA
+                        else {
                             this.esSentidoIda = false;
                         }
                     }
@@ -1026,10 +1050,11 @@
                         "S. Lluís-P. Prima": 7, "P. Prima-S. Lluís": 7,
                         "S. Lluís-Binibèquer": 10, "Binibèquer-S. Lluís": 10,
                         "Ferr-Galdana": 11, "Galdana-Ferr": 11,
-                        /* LANZADERA L53 TIEMPOS EXACTOS (IDA Y VUELTA 11 MIN) */
+                        /* LANZADERA L53 / CALA GALDANA TIEMPOS EXACTOS (IDA Y VUELTA 11 MIN) */
                         "Ferr-Cementerio": 2, "Cementerio-Camping": 3, "Camping-C. Mitjana": 2, "C. Mitjana-Galdana": 4,
                         "Galdana-C. Mitjana": 2, "C. Mitjana-Camping": 3, "Camping-Cementerio": 3, "Cementerio-Ferr": 3,
                         "Mer-Migjorn": 12, "Migjorn-Mer": 12,
+                        /* SANT TOMÀS TIEMPOS EXACTOS */
                         "Migjorn-S. Tomàs 1ª": 8, "S. Tomàs 1ª-S. Tomàs 2ª": 1, "S. Tomàs 2ª-S. Tomàs 3ª": 2,
                         "S. Tomàs 3ª-Migjorn": 8, "S. Tomàs 1ª-Migjorn": 8,
                         "Alaior C.-Migjorn": 12, "Migjorn-Alaior C.": 12,
@@ -1061,7 +1086,8 @@
                 },
 
                 invertirRuta() {
-                    this.esTerminalGaldana = this.miUbicacion === 'Galdana';
+                    this.esTerminalGaldana = (this.miUbicacion === 'Galdana');
+                    this.esTerminalTomas = (this.miUbicacion === 'S. Tomàs 1ª' || this.miUbicacion === 'S. Tomàs 3ª');
                     this.mostrarModalResumen = true;
                 },
 
@@ -1083,17 +1109,36 @@
                     this.actualizarMiEstadoBD();
                 },
 
+                // INTERCAMBIO Y SALIDA DESDE CALA GALDANA (VUELTA / NARANJA)
                 cambiarServicioGaldana(lineaDestino) {
-                    if (lineaDestino === 'L51') this.miLinea = "Línea Maó - Galdana";
-                    if (lineaDestino === 'L52') this.miLinea = "Línea Ciu - Galdana";
-                    if (lineaDestino === 'L53') this.miLinea = "Línea Ferreries - Galdana";
-                    
-                    this.misParadasArray = (lineaDestino === 'L51') 
-                        ? ["Galdana", "Ferr", "Mer", "Alaior C.", "Alaior P.", "Argen", "Maó"]
-                        : ((lineaDestino === 'L52') ? ["Galdana", "Ferr", "Ciu"] : ["Galdana", "C. Mitjana", "Camping", "Cementerio", "Ferr"]);
+                    if (lineaDestino === 'L51') {
+                        this.miLinea = "Línea Maó - Galdana";
+                        this.misParadasArray = ["Galdana", "C. Mitjana", "Camping", "Cementerio", "Ferr", "Mer", "Alaior C.", "Alaior P.", "Argen", "Maó"];
+                    } else if (lineaDestino === 'L52') {
+                        this.miLinea = "Línea Ciu - Galdana";
+                        this.misParadasArray = ["Galdana", "C. Mitjana", "Camping", "Cementerio", "Ferr", "Ciu"];
+                    } else if (lineaDestino === 'L53') {
+                        this.miLinea = "Línea Ferreries - Galdana";
+                        this.misParadasArray = ["Galdana", "C. Mitjana", "Camping", "Cementerio", "Ferr"];
+                    }
                     
                     this.miUbicacion = "Galdana";
-                    this.esSentidoIda = false;
+                    this.esSentidoIda = false; // VUELTA = NARANJA
+                    this.confirmarCierreResumen();
+                },
+
+                // INTERCAMBIO Y SALIDA DESDE SANT TOMÀS (VUELTA / NARANJA)
+                cambiarServicioTomas(lineaDestino) {
+                    if (lineaDestino === 'L71') {
+                        this.miLinea = "Línea Maó - S. Tomàs";
+                        this.misParadasArray = ["S. Tomàs 1ª", "S. Tomàs 2ª", "S. Tomàs 3ª", "Migjorn", "Alaior C.", "Alaior P.", "Argen", "Maó"];
+                    } else if (lineaDestino === 'L72') {
+                        this.miLinea = "Línea Ciu - S. Tomàs";
+                        this.misParadasArray = ["S. Tomàs 1ª", "S. Tomàs 2ª", "S. Tomàs 3ª", "Migjorn", "Mer", "Ferr", "Ciu"];
+                    }
+                    
+                    this.miUbicacion = "S. Tomàs 1ª";
+                    this.esSentidoIda = false; // VUELTA = NARANJA
                     this.confirmarCierreResumen();
                 },
 
@@ -1301,7 +1346,17 @@
 
                 verificarFinalRuta() {
                     let idx = this.misParadasArray.indexOf(this.miUbicacion);
+                    
+                    // LLEGADA A 1ª PARADA DE SANT TOMÀS
+                    if (this.miUbicacion === 'S. Tomàs 1ª' && this.enParada) {
+                        this.esTerminalTomas = true;
+                        this.mostrarAvisoFinalRuta = true;
+                        return;
+                    }
+
+                    // LLEGADA A TERMINAL FINAL SENSING
                     if (idx === this.misParadasArray.length - 1 && this.enParada) {
+                        this.esTerminalGaldana = (this.miUbicacion === 'Galdana');
                         this.mostrarAvisoFinalRuta = true;
                     }
                 },
